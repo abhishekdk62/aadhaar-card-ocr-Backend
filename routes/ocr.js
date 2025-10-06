@@ -80,7 +80,7 @@ async function processImageWithOCRSpace(imageBuffer, side) {
       formData,
       {
         headers: { ...formData.getHeaders() },
-        timeout: 30000,
+        timeout: 90000,
       }
     );
 
