@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "upbeat-legacy-474303-v0",
+  "private_key_id": "a43490f767e8098d4c2192044c9f4ebe226e03f2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDqcEG382DYkDTP\nSr/9LqSZWlBJLXOdl3xGkhMVEWA85LAZ1tcxNqYWWhAaIdGC/F7qPh+2CWN4foR1\n6Xg9p1BX7uDiNK8UCMV/7brSRRqSQudnmP3e5nBwzOE3pc9bOSuZzE3jFu7Li30v\nhPrKOVw5uc2qemHFyaMC77J2pMceOR6BTLvNjcPZkw20hKCDyZPa1S64eAIBB11b\nmHtMIj8GkiQzJaXLMDzmp7kcWbXhrneoZblzRm3EJMStM2aO99cYc44Np2QjQ7rs\nF+cW9MCmmP3vX8WZ9tQpvAIX9vBhrH5zsyQvjFsHFj/3kXYrMJ3Z6ZOCnS26UKc/\n2iSs1YQVAgMBAAECggEAIxeenrxtmL0tSoIz7uAWf2YHcoy9K6/LSH0BIjwxnavV\nuGhyWcmGXv4oPuElDWhdhM67zHHnU9gMV+IUv5XV7vOw8etU8bjGZ3ncZzE04wPk\nw5shFUaFOj1Q0RWezlbmceUlG4MJR6qfmIddSvv/FBz97jDXhdXC8uOSYTQVIi69\nSL/jStGf6fuokJDmyLK/bl5pVXJmKJvsKVO6ClK58F/6eXMlVmfGFOEwm30JKBvE\ns9RrJr8rhfVeW15b1IZolnn6iAWituN21TcvDfqi66aigzaTKpj5Yfvj//ON/NdN\nhsB2XSBUzBFT5iZncA5djnPO2L97BhCRKL0ZBeofwQKBgQD6BQ95xEdcSwoYktpr\nohaHKBStPEryDWHnumujmv9JhKdBJqdZEKiffS1pFrTi+tzcEpgLu61d5aXLdY5x\n12ry8KaekYD6jZ/MOr/O40BLIEVjRAM9HlPwq5XjkzkN5AMNYZEXuxKf5bXdvNmE\nqQF4RN6pGqU6/n/ge5jZ0Af4TQKBgQDwC8m0XqL5LoN2j5gqTBQErwzsEGhCB4d7\nO9JpM3BnkdaP7CT6sfD6I7dxQBuYXW0eIH/jLuZMbyXfx+IlO26yB0U1/vAdKYv7\n08pIZY5V8Pc4gDkIbR+TMnATP87mmorZCP/wOuPWrVnpriiVbjMs+NmCKjegwKC6\nalJ4Pime6QKBgE5RIXziJ/xYISx7a+IFXwstWfS+CzfxSzbcZXVVSxyLahz1b7xt\nhHSZMI1XqIflTyO8y1X5jx/3nMyz4U/1y7GYAolvSLizflfqG0VCWFRwImwq1Nzj\nUCX2ibhE2L1qLC6X3mxRlE70FNkFnBl7G1PCNwE/sHxfVk1KSiIIkUaNAoGAYd5s\nfn2XNMEiGFSzVYtvHfnA6v5Fg6ZONpBNWVb/nTp4oHVHHm8uMM4fHK1mktiEhKP7\ngES+4KrwZiy4pzV0DGGqdjla7Ijj6eiPsLS3M5LrOL4OgsD6/qixySda0+pucc6Z\nivh3rC9BWWUIZuRnOQ68n7VWuNPQtDBlL2Eo1wECgYAwuj1xxSv/Lt6vLsHmUaPB\nxIhqjhZ2iOGWNpCRs/xqjYA3Z6oZs2waF8uFqRnsyzuidgCJSCSsA351OIiexMTB\nST1Q2z3u3GwN1rKTJideBZ55489qSoDMDxbyBjp8eoBZmki3ZGCsIW/8J7PQuN3s\n0YiTRIclD5pamcxH5JoNNw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "aadhaar-ocr-service@upbeat-legacy-474303-v0.iam.gserviceaccount.com",
+  "client_id": "105036112079061985205",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/aadhaar-ocr-service%40upbeat-legacy-474303-v0.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
