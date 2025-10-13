@@ -24,12 +24,11 @@ async function ensureWorker() {
 
 async function preprocess(buffer) {
   return await sharp(buffer)
-    .resize({ height: 1500, withoutEnlargement: false })
+    .resize({ height: 800 }) // Changed from 1500
     .grayscale()
     .normalise()
-    .sharpen()
     .threshold(128)
-    .jpeg({ quality: 92, mozjpeg: true })
+    .jpeg({ quality: 80 }) // Changed from 92
     .toBuffer();
 }
 
