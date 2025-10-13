@@ -9,7 +9,7 @@ app.use(express.json());
 app.use('/api/ocr', ocrRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Aadhaar OCR API is running!' });
+  res.json({ message: 'Aadhaar  API is running!' });
 });
 
 module.exports = app;
