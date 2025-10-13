@@ -12,23 +12,32 @@ let worker = null;
 async function ensureWorker() {
   if (worker) return worker;
   
-  worker = await Tesseract.createWorker(TESS_LANG, 1, {});
+  console.log("Creating Tesseract worker...");
+  
+  worker = await Tesseract.createWorker(TESS_LANG, 1, {
+    langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+    gzip: true,
+    cacheMethod: 'none', 
+  });
+  
+  console.log("Worker created, setting parameters...");
   
   await worker.setParameters({
-    tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+    tessedit_pageseg_mode: Tesseract.PSM.AUTO, 
     preserve_interword_spaces: '1',
   });
   
+  console.log("Worker ready!");
   return worker;
 }
 
 async function preprocess(buffer) {
   return await sharp(buffer)
-    .resize({ height: 800 }) // Changed from 1500
+    .resize({ height: 600 }) 
     .grayscale()
     .normalise()
     .threshold(128)
-    .jpeg({ quality: 80 }) // Changed from 92
+    .jpeg({ quality: 70 })
     .toBuffer();
 }
 
@@ -48,7 +57,6 @@ function cleanOCRText(text) {
     .trim();
 }
 
-// ✅ NEW CODE - Extract name from line after "Government of India"
 function extractAadhaarInfo(frontText, backText) {
   const cleanedFront = cleanOCRText(frontText);
   const cleanedBack = cleanOCRText(backText);
@@ -66,7 +74,6 @@ function extractAadhaarInfo(frontText, backText) {
     confidenceNote: "Field values depend on OCR quality and preprocessing.",
   };
 
-  // Extract Aadhaar Number
   const uidMatch = combined.match(/\b(\d{4})\s*(\d{4})\s*(\d{4})\b/);
   if (uidMatch) {
     const uid = (uidMatch[1] + uidMatch[2] + uidMatch[3]).trim();
@@ -75,8 +82,6 @@ function extractAadhaarInfo(frontText, backText) {
       out.aadhaarMasked = `XXXX-XXXX-${uid.slice(-4)}`;
     }
   }
-
-  // Extract DOB
   const dobMatch =
     combined.match(/DOB\s*[:\s-]*\s*([0-3]?\d\s*\/\s*[01]?\d\s*\/\s*\d{4})/i) ||
     combined.match(/Date\s+of\s+Birth\s*[:\s-]*\s*([0-3]?\d\s*\/\s*[01]?\d\s*\/\s*\d{4})/i) ||
@@ -93,44 +98,30 @@ function extractAadhaarInfo(frontText, backText) {
   const genderMatch = combined.match(/\b(MALE|FEMALE|Male|Female|Transgender)\b/i);
   if (genderMatch) out.gender = genderMatch[0].toLowerCase();
 
-  // ✅ NAME EXTRACTION - Get line after "Government of India"
+  // NAME EXTRACTION
   const linesFront = cleanedFront.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   let nameCandidate = null;
 
-  console.log("=== All Front Lines ===");
-  linesFront.forEach((line, idx) => console.log(`${idx}: "${line}"`));
-
-  // Find "Government of India" line
   const giIndex = linesFront.findIndex(l => /government\s+of\s+india/i.test(l));
   
   if (giIndex >= 0) {
-    console.log(`✓ Found "Government of India" at line ${giIndex}`);
-    
-    // Check the next line
     const nextLine = linesFront[giIndex + 1];
     
     if (nextLine) {
-      console.log(`Checking next line ${giIndex + 1}: "${nextLine}"`);
-      
-      // Pattern 1: Initials + Name (A.R.Ramachandran)
       let nameMatch = nextLine.match(/^([A-Z]\.[A-Z]\.[A-Z][a-z]+)$/i);
       if (!nameMatch) nameMatch = nextLine.match(/^([A-Z]\.[A-Z][a-z]+)$/i);
       
-      // Pattern 2: Regular name (Mohammed Saif Faroogqi)
       if (!nameMatch) {
         nameMatch = nextLine.match(/^([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,3})$/i);
       }
       
-      // Pattern 3: All caps (JOHN DOE)
       if (!nameMatch) {
         nameMatch = nextLine.match(/^([A-Z\.\s]{3,60})$/);
       }
       
       if (nameMatch) {
         const potentialName = nameMatch[1] || nameMatch[0];
-        
-        // Exclude noise words
-        const excludeWords = /^(government|india|card|aadhaar|address|male|female|uid|dob|authority|identification|unique|sewer|adue|sas|ttt|hippies|smme|mrer|eine|eyly|ate|ahs|sifefmrisld)$/i;
+        const excludeWords = /^(government|india|card|aadhaar|address|male|female|uid|dob|authority|identification|unique)$/i;
         
         if (
           !excludeWords.test(potentialName.trim()) &&
@@ -138,21 +129,11 @@ function extractAadhaarInfo(frontText, backText) {
           potentialName.length <= 60
         ) {
           nameCandidate = potentialName;
-          console.log(`✓ Found valid name: "${nameCandidate}"`);
-        } else {
-          console.log(`✗ Excluded noise: "${potentialName}"`);
         }
-      } else {
-        console.log(`✗ No name pattern matched in: "${nextLine}"`);
       }
-    } else {
-      console.log("✗ No line found after 'Government of India'");
     }
-  } else {
-    console.log("✗ 'Government of India' text not found");
   }
 
-  // Format the name
   if (nameCandidate) {
     out.name = nameCandidate
       .replace(/\s{2,}/g, ' ')
@@ -160,13 +141,7 @@ function extractAadhaarInfo(frontText, backText) {
       .replace(/\.{2,}/g, '.')
       .trim()
       .toUpperCase();
-    
-    console.log("✓✓✓ FINAL NAME:", out.name);
-  } else {
-    console.log("✗✗✗ NO NAME EXTRACTED");
   }
-
-  // Extract Address
   const back = cleanedBack.replace(/\r/g, "");
   const addrBlock =
     back.match(/Address[:\s]*([\s\S]+?)(?:\b\d{6}\b|$)/i) ||
@@ -206,17 +181,17 @@ router.post(
         });
       }
 
-      console.log("Preprocessing images...");
-      const [frontPre, backPre] = await Promise.all([
-        preprocess(frontImage.buffer),
-        preprocess(backImage.buffer),
-      ]);
-
-      console.log("Running OCR...");
-      const [frontRes, backRes] = await Promise.all([
-        runOCR(frontPre),
-        runOCR(backPre),
-      ]);
+      console.log("Preprocessing front image...");
+      const frontPre = await preprocess(frontImage.buffer);
+      
+      console.log("Running OCR on front...");
+      const frontRes = await runOCR(frontPre);
+      
+      console.log("Preprocessing back image...");
+      const backPre = await preprocess(backImage.buffer);
+      
+      console.log("Running OCR on back...");
+      const backRes = await runOCR(backPre);
 
       console.log("Parsing Aadhaar data...");
       const parsed = extractAadhaarInfo(frontRes.text || "", backRes.text || "");
@@ -243,11 +218,6 @@ router.post(
   }
 );
 
-process.on("SIGINT", async () => {
-  if (worker) {
-    await worker.terminate();
-  }
-  process.exit(0);
-});
+
 
 module.exports = router;
