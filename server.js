@@ -12,5 +12,4 @@ app.get('/', (req, res) => {
   res.json({ message: 'Aadhaar OCR API is running!' });
 });
 
-// Export for Vercel (CRITICAL!)
 module.exports = app;
