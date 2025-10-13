@@ -14,12 +14,19 @@ async function ensureWorker() {
   
   console.log("Creating Tesseract worker...");
   
-  // ✅ FIXED for Vercel serverless - no workerPath/corePath on backend
+  // ✅ FORCE load core from CDN by not using default bundled version
   worker = await Tesseract.createWorker(TESS_LANG, 1, {
     langPath: 'https://tessdata.projectnaptha.com/4.0.0',
-    cachePath: '/tmp', // ✅ Vercel can only write to /tmp
-    cacheMethod: 'write', // ✅ Cache for faster subsequent runs
+    cachePath: '/tmp',
+    cacheMethod: 'write',
+    // ✅ CRITICAL: Override default core path to force CDN download
+    logger: m => console.log(m), // See what's happening
   });
+  
+  // ✅ Manually override internal paths after creation
+  if (worker.worker && worker.worker.options) {
+    worker.worker.options.corePath = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.0.0/tesseract-core.wasm.js';
+  }
   
   console.log("Worker created, setting parameters...");
   
