@@ -226,12 +226,6 @@ router.post(
   }
 );
 
-// ✅ Don't terminate worker on serverless (causes issues)
-// process.on("SIGINT", async () => {
-//   if (worker) {
-//     await worker.terminate();
-//   }
-//   process.exit(0);
-// });
+
 
 module.exports = router;
