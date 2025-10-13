@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "server.js"
+      "source": "/(.*)",
+      "destination": "/server.js"
     }
   ],
   "functions": {
     "server.js": {
-      "maxDuration": 60,
+      "maxDuration": 300,
       "memory": 1024
     }
   }
