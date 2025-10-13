@@ -14,12 +14,11 @@ async function ensureWorker() {
   
   console.log("Creating Tesseract worker...");
   
+  // ✅ FIXED for Vercel serverless - no workerPath/corePath on backend
   worker = await Tesseract.createWorker(TESS_LANG, 1, {
-    // ✅ CRITICAL FIX: Load ALL files from CDN, not local filesystem
-    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
     langPath: 'https://tessdata.projectnaptha.com/4.0.0',
-    corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js',
-    cacheMethod: 'none',
+    cachePath: '/tmp', // ✅ Vercel can only write to /tmp
+    cacheMethod: 'write', // ✅ Cache for faster subsequent runs
   });
   
   console.log("Worker created, setting parameters...");
