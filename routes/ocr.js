@@ -15,15 +15,17 @@ async function ensureWorker() {
   console.log("Creating Tesseract worker...");
   
   worker = await Tesseract.createWorker(TESS_LANG, 1, {
+    // ✅ CRITICAL FIX: Load ALL files from CDN, not local filesystem
+    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
     langPath: 'https://tessdata.projectnaptha.com/4.0.0',
-    gzip: true,
-    cacheMethod: 'none', 
+    corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js',
+    cacheMethod: 'none',
   });
   
   console.log("Worker created, setting parameters...");
   
   await worker.setParameters({
-    tessedit_pageseg_mode: Tesseract.PSM.AUTO, 
+    tessedit_pageseg_mode: Tesseract.PSM.AUTO,
     preserve_interword_spaces: '1',
   });
   
@@ -33,7 +35,7 @@ async function ensureWorker() {
 
 async function preprocess(buffer) {
   return await sharp(buffer)
-    .resize({ height: 600 }) 
+    .resize({ height: 600 })
     .grayscale()
     .normalise()
     .threshold(128)
@@ -62,8 +64,6 @@ function extractAadhaarInfo(frontText, backText) {
   const cleanedBack = cleanOCRText(backText);
   const combined = `${cleanedFront}\n${cleanedBack}`.replace(/[|]/g, "I");
 
-  console.log("Cleaned Front Text:", cleanedFront);
-
   const out = {
     aadhaarNumber: null,
     aadhaarMasked: null,
@@ -71,7 +71,6 @@ function extractAadhaarInfo(frontText, backText) {
     dob: null,
     gender: null,
     address: null,
-    confidenceNote: "Field values depend on OCR quality and preprocessing.",
   };
 
   const uidMatch = combined.match(/\b(\d{4})\s*(\d{4})\s*(\d{4})\b/);
@@ -82,81 +81,32 @@ function extractAadhaarInfo(frontText, backText) {
       out.aadhaarMasked = `XXXX-XXXX-${uid.slice(-4)}`;
     }
   }
+
   const dobMatch =
     combined.match(/DOB\s*[:\s-]*\s*([0-3]?\d\s*\/\s*[01]?\d\s*\/\s*\d{4})/i) ||
-    combined.match(/Date\s+of\s+Birth\s*[:\s-]*\s*([0-3]?\d\s*\/\s*[01]?\d\s*\/\s*\d{4})/i) ||
     combined.match(/\b([0-3]\d\s*\/\s*[01]\d\s*\/\s*\d{4})\b/);
   
-  if (dobMatch) {
-    out.dob = dobMatch[1].replace(/\s/g, '');
-  }
+  if (dobMatch) out.dob = dobMatch[1].replace(/\s/g, '');
 
-  const yobMatch = combined.match(/Year\s+of\s+Birth\s*[:\s-]*\s*(\d{4})/i);
-  if (!out.dob && yobMatch) out.dob = yobMatch[1];
-
-  // Extract Gender
-  const genderMatch = combined.match(/\b(MALE|FEMALE|Male|Female|Transgender)\b/i);
+  const genderMatch = combined.match(/\b(MALE|FEMALE)\b/i);
   if (genderMatch) out.gender = genderMatch[0].toLowerCase();
 
-  // NAME EXTRACTION
   const linesFront = cleanedFront.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-  let nameCandidate = null;
-
   const giIndex = linesFront.findIndex(l => /government\s+of\s+india/i.test(l));
   
-  if (giIndex >= 0) {
+  if (giIndex >= 0 && linesFront[giIndex + 1]) {
     const nextLine = linesFront[giIndex + 1];
-    
-    if (nextLine) {
-      let nameMatch = nextLine.match(/^([A-Z]\.[A-Z]\.[A-Z][a-z]+)$/i);
-      if (!nameMatch) nameMatch = nextLine.match(/^([A-Z]\.[A-Z][a-z]+)$/i);
-      
-      if (!nameMatch) {
-        nameMatch = nextLine.match(/^([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,3})$/i);
-      }
-      
-      if (!nameMatch) {
-        nameMatch = nextLine.match(/^([A-Z\.\s]{3,60})$/);
-      }
-      
-      if (nameMatch) {
-        const potentialName = nameMatch[1] || nameMatch[0];
-        const excludeWords = /^(government|india|card|aadhaar|address|male|female|uid|dob|authority|identification|unique)$/i;
-        
-        if (
-          !excludeWords.test(potentialName.trim()) &&
-          potentialName.length >= 3 &&
-          potentialName.length <= 60
-        ) {
-          nameCandidate = potentialName;
-        }
-      }
+    if (nextLine.length >= 3 && nextLine.length <= 60) {
+      out.name = nextLine.toUpperCase().replace(/[0-9]/g, '').trim();
     }
   }
 
-  if (nameCandidate) {
-    out.name = nameCandidate
-      .replace(/\s{2,}/g, ' ')
-      .replace(/[0-9]/g, '')
-      .replace(/\.{2,}/g, '.')
-      .trim()
-      .toUpperCase();
-  }
   const back = cleanedBack.replace(/\r/g, "");
-  const addrBlock =
-    back.match(/Address[:\s]*([\s\S]+?)(?:\b\d{6}\b|$)/i) ||
-    back.match(/(?:S\/O|W\/O|C\/O)[:\s]*([\s\S]+?)(?:\b\d{6}\b|$)/i);
+  const addrBlock = back.match(/Address[:\s]*([\s\S]+?)(?:\b\d{6}\b|$)/i);
   if (addrBlock) {
-    let addr = addrBlock[1]
-      .split("\n")
-      .map(s => s.trim())
-      .filter(Boolean)
-      .join(", ");
+    let addr = addrBlock[1].split("\n").map(s => s.trim()).filter(Boolean).join(", ");
     const pin = addr.match(/\b\d{6}\b/);
-    if (pin) {
-      const idx = addr.indexOf(pin[0]) + 6;
-      addr = addr.slice(0, idx);
-    }
+    if (pin) addr = addr.slice(0, addr.indexOf(pin[0]) + 6);
     out.address = addr.slice(0, 300);
   }
 
@@ -217,7 +167,5 @@ router.post(
     }
   }
 );
-
-
 
 module.exports = router;
