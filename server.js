@@ -24,7 +24,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/ocr', ocrRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Aadhaar OCR API is running created by abhishek!' });
+  res.json({ message: 'Aadhaar OCR API is running !' });
 });
 
 // Only start server if not in Vercel serverless environment
