@@ -1,6 +1,7 @@
 const tesseractRepository = require('../repositories/tesseract.repository');
 const imageService = require('./image.service');
 const aadhaarUtils = require('../utils/aadhaar.utils');
+const { STATUS_MESSAGES } = require('../../constants/MESSAGES');
 class OCRService {
  async processAadhaarImages(frontImageBuffer, backImageBuffer) {
   try {
@@ -28,7 +29,7 @@ class OCRService {
       extractedInfo,
     };
   } catch (error) {
-    console.error("Error processing Aadhaar images:", error);
+    console.error(STATUS_MESSAGES.ERROR_PROCESSING, error);
     throw error; 
   }
 }

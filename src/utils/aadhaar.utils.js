@@ -1,3 +1,4 @@
+const { STATUS_MESSAGES } = require("../../constants/MESSAGES");
 const ValidationError = require("../errors/ValidationError");
 const textUtils = require("./text.utils");
 
@@ -21,12 +22,12 @@ class AadhaarUtils {
     console.log(backAadhaarNumber);
 
     if (!frontAadhaarNumber || !backAadhaarNumber) {
-      throw new ValidationError("Please provide a valid Aadhaar card", 400);
+      throw new ValidationError(STATUS_MESSAGES.ADHAAR_NOT_VALID, 400);
     }
 
     if (frontAadhaarNumber !== backAadhaarNumber) {
       throw new ValidationError(
-        "Aadhaar numbers on front and back do not match.",
+        STATUS_MESSAGES.ADHAAR_NUMBER_DO_NOT_MATCH,
         400
       );
     }
