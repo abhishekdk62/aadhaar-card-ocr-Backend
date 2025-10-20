@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/ocr", ocrRoutes);
 app.get("/", (req, res) => {
-  res.json({ message: "Aadhaar API is running!" });
+  res.sendStatus(200)
 });
 app.get("/health", (req, res) => {
   res.status(200).json({
