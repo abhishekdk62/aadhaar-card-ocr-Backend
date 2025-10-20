@@ -6,17 +6,19 @@ const { STATUS_CODES } = require("./constants/STATUS_CODES");
 const ocrRoutes = require("./src/routes/ocr.routes");
 require("dotenv").config();
 const app = express();
+const allowedOrigin =
+  process.env.NODE_ENV === "development"
+    ? process.env.FRONTEND_DEV_URL
+    : process.env.FRONTEND_PROD_URL;
+
 app.use(
   cors({
-    origin: [
-      process.env.NODE_ENV == "dev"
-        ? process.env.FRONTEND_DEV_URL
-        : process.env.FRONTEND_PROD_URL,
-    ],
+    origin: allowedOrigin,
     credentials: true,
     methods: ["GET", "POST", "OPTIONS"],
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/ocr", ocrRoutes);
